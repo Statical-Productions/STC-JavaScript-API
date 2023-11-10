@@ -105,7 +105,3 @@ app.post('/mosaic-30b-api', async (req, res) => {
     res.json(response);
   }
 });
-
-// MODULE EXPORT
-
-module.exports = app;
