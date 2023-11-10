@@ -15,16 +15,11 @@ const app = express();
 
 const huggingface_api_url = 'https://api-inference.huggingface.co/models/'
 const gradio_version = "0.2.7";
-const headers = {
-  "user-agent": `gradio_client/${gradio_version}`,
-  "Authorization": `Bearer ${HF_AUTH}`
-};
+const headers = { "user-agent": `gradio_client/${gradio_version}`, "Authorization": `Bearer ${HF_AUTH}` };
 
 // FUNCTIONS //
 
-function randomizer(min, max) {
-  return (Math.floor(Math.random() * (max - min + 1)) + min)
-}
+function randomizer(min, max) { return (Math.floor(Math.random() * (max - min + 1)) + min) }
 
 async function generate(data, fn_index, model_url) {
   let session_hash = uuid.v4();
@@ -46,11 +41,7 @@ async function generate(data, fn_index, model_url) {
 }
 
 async function fileto_base64(url) {
-  const response = await axios({
-    method: 'GET',
-    url: url,
-    responseType: 'arraybuffer',
-  });
+  const response = await axios({ method: 'GET', url: url, responseType: 'arraybuffer' });
   const base64 = Buffer.from(response.data, 'binary').toString('base64');
   return `data:${response.headers['content-type']};base64,${base64}`;
 }
@@ -62,12 +53,6 @@ app.use(express.urlencoded({limit: '50mb', extended: true}));
 app.listen(3000, () => {console.log('[API] API server is running on http://localhost:3000')});
 
 // APIS //
-app.post('/falcon-7b-api', async (req, res) => {
-  const getpayload = req.body
-  const result = await call_api(getpayload);
-  const response = {'status': 'success', 'content': result}
-  res.json(response);
-});
 
 app.post('/falcon-40b-api', async (req, res) => {
   try {
@@ -119,85 +104,6 @@ app.post('/mosaic-30b-api', async (req, res) => {
       const response = {'status': 'success', 'content': get_result}
       res.json(response);
     })
-  }
-  catch (result) {
-    console.log(`[API] API error: [${result}]`)
-    const response = {'status': 'error', 'content': result}
-    res.json(response);
-  }
-});
-
-app.post('/image-captioning-api', async (req, res) => {
-  try {
-    const data = req.body
-    const purpose = data["purpose"]
-  
-    let input = data["input"]
-
-    console.log(`[API] API called: [${purpose} : ${input}]`)
-
-    fileto_base64(input).then(input_base64 => {
-      const build_data = [input_base64]
-      generate(build_data, 0, "nielsr-comparing-captioning-models.hf.space/").then((result) => {
-        let get_result = result["data"][3];
-        console.log(`[API] API result: [${get_result}]`)
-        const response = {'status': 'success', 'content': get_result}
-        res.json(response);
-      }) 
-    })
-  }
-  catch (result) {
-    console.log(`[API] API error: [${result}]`)
-    const response = {'status': 'error', 'content': result}
-    res.json(response);
-  }
-});
-
-app.post('/whisper-transcriber-api', async (req, res) => {
-  try {
-    const data = req.body
-    const purpose = data["purpose"]
-  
-    let input = data["input"]
-    let name = data["name"]
-    let type = data["type"]
-
-    console.log(`[API] API called: [${purpose} : ${name} : ${type}]`)
-    
-    const build_data = [{"name": name, "data": input}, type, false]
-    generate(build_data, 0, "sanchit-gandhi-whisper-jax.hf.space/").then((result) => {
-      let get_result = result["data"];
-      console.log(`[API] API result: [${get_result}]`)
-      const response = {'status': 'success', 'content': get_result}
-      res.json(response);
-    }) 
-  }
-  catch (result) {
-    console.log(`[API] API error: [${result}]`)
-    const response = {'status': 'error', 'content': result}
-    res.json(response);
-  }
-});
-
-app.post('/moe-tts-api', async (req, res) => {
-  try {
-    const data = req.body
-    const purpose = data["purpose"]
-  
-    let input = data["input"]
-    let model = data["model"]
-    let speed = data["speed"]
-    let symbol = data["symbol"]
-
-    console.log(`[API] API called: [${purpose} : ${input} : ${model} : ${speed} : ${symbol}]`)
-    
-    const build_data = [input, model, speed, symbol]
-    generate(build_data, 49, "skytnt-moe-tts--lzswp.hf.space/").then((result) => {
-      let get_result = result["data"];
-      console.log(`[API] API result: [${"AUDIO_FILE"}]`)
-      const response = {'status': 'success', 'content': get_result}
-      res.json(response);
-    }) 
   }
   catch (result) {
     console.log(`[API] API error: [${result}]`)
