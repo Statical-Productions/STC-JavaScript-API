@@ -9,7 +9,6 @@ const cors = require('cors');
 require('dotenv').config();
 
 const HF_AUTH = process.env['HF_AUTH']
-const API_KEYS = process.env['API_KEYS']
 
 // CONFIGURATIONS //
 const app = express();
@@ -44,13 +43,6 @@ async function generate(data, fn_index, model_url) {
       });
       websocket.on('error', (error) => { mainReject(error); });
   });
-}
-
-async function generate_inference(data, model_url) {
-  var keys = JSON.parse(API_KEYS)
-  var headers = { 'Authorization': `Bearer ${keys[randomizer(0, keys.length - 1)]}` };
-  const response = await axios.post(huggingface_api_url + model_url, data, { headers: headers });
-  return response["data"];
 }
 
 async function fileto_base64(url) {
